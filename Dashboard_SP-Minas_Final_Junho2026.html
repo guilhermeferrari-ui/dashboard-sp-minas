@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP-Minas · Dashboard · Junho 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --roxo:#7200D6;--roxo-dk:#5500A0;--roxo-lt:#F0E6FF;
+  --verde:#70E000;--verde-dk:#52A800;--verde-lt:#EDFFD6;
+  --branco:#FFFFFF;
+  --c50:#FAFAFA;--c100:#F4F4F5;--c200:#E4E4E7;--c400:#A1A1AA;--c600:#52525B;--c900:#18181B;
+  --rd:#DC2626;--rd-lt:#FEF2F2;--am:#D97706;--am-lt:#FFFBEB;--gn:#16A34A;--gn-lt:#F0FFF4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F3ECFF;color:var(--c900)}
+
+/* HEADER */
+.hdr{background:var(--roxo);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;box-shadow:0 4px 20px rgba(114,0,214,.35);position:sticky;top:0;z-index:50}
+.hdr-l{display:flex;align-items:center;gap:14px}
+.logo-ph{background:rgba(255,255,255,.15);border:1.5px dashed rgba(255,255,255,.45);border-radius:8px;padding:5px 12px;font-size:10px;color:rgba(255,255,255,.7);font-family:'DM Mono',monospace;white-space:nowrap}
+.hdr-info .t{font-size:14px;font-weight:600;color:#fff}
+.hdr-info .s{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.du-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:5px 14px;color:#fff;font-size:12px;font-weight:500}
+.du-box input{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:var(--verde);font-size:15px;font-weight:700;font-family:'DM Mono',monospace;width:46px;text-align:center;padding:2px 4px}
+.du-box input:focus{outline:none;border-color:var(--verde)}
+.sync-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.sync-btn:hover{background:rgba(255,255,255,.25)}
+.sync-btn svg{transition:transform .3s}
+.sync-btn.loading svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-status{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px;text-align:center}
+.pill{background:var(--verde);color:var(--c900);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px}
+
+/* MAIN */
+.main{max-width:1500px;margin:0 auto;padding:20px 28px;display:flex;flex-direction:column;gap:16px}
+
+/* CONFIG */
+.cfg{background:var(--branco);border:2px dashed var(--roxo-lt);border-radius:16px;padding:18px 22px}
+.cfg-title{font-size:12px;font-weight:600;color:var(--roxo);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.cfg-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.cf{display:flex;flex-direction:column;gap:4px}
+.cf label{font-size:10px;font-weight:600;color:var(--c600);text-transform:uppercase;letter-spacing:.05em}
+.cf input{padding:7px 10px;border:1.5px solid var(--c200);border-radius:9px;font-size:12px;font-family:'DM Mono',monospace;color:var(--c900);transition:border-color .2s}
+.cf input:focus{outline:none;border-color:var(--roxo)}
+.cf small{font-size:10px;color:var(--c400)}
+.cf.w{flex:1;min-width:220px}.cf.m{width:180px}.cf.s{width:82px}
+.btn-save{padding:8px 18px;background:var(--roxo);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;align-self:flex-end}
+.btn-save:hover{background:var(--roxo-dk)}
+.alert{padding:8px 12px;border-radius:9px;font-size:12px;margin-top:10px;display:none}
+.alert.ok{background:var(--gn-lt);color:var(--gn);display:block}
+.alert.err{background:var(--rd-lt);color:var(--rd);display:block}
+.alert.info{background:var(--roxo-lt);color:var(--roxo);display:block}
+.cfg-warn{margin-top:10px;padding:8px 12px;background:#FFFBEB;border-radius:9px;border:1px solid #FDE68A;font-size:11px;color:#92400E}
+
+/* RELÓGIO */
+.rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.rel-grid{grid-template-columns:1fr}}
+.card{background:var(--branco);border-radius:16px;box-shadow:0 2px 10px rgba(114,0,214,.07);border:1px solid rgba(114,0,214,.07);padding:22px;display:flex;flex-direction:column;gap:14px}
+.card-title{font-size:11px;font-weight:600;color:var(--c400);text-transform:uppercase;letter-spacing:.07em;display:flex;justify-content:space-between;align-items:center}
+.last-sync{font-size:10px;color:var(--c400);font-family:'DM Mono',monospace}
+.gauge-wrap{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.gauge-svg{position:relative;width:180px;height:108px;flex-shrink:0}
+.gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-28%);text-align:center;pointer-events:none}
+.gauge-pct{font-size:30px;font-weight:700;font-family:'DM Mono',monospace;line-height:1}
+.gauge-sub{font-size:11px;color:var(--c400);margin-top:2px}
+.rst-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;min-width:185px}
+.rst{background:var(--c50);border-radius:9px;padding:10px 12px;border:1px solid var(--c100)}
+.rst-l{font-size:10px;font-weight:600;color:var(--c400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.rst-v{font-size:15px;font-weight:700;font-family:'DM Mono',monospace;line-height:1.1}
+.rst-v.roxo{color:var(--roxo)}.rst-v.gn{color:var(--gn)}.rst-v.rd{color:var(--rd)}.rst-v.am{color:var(--am)}
+.rst-s{font-size:10px;color:var(--c400);margin-top:2px}
+.pace-wrap{display:flex;flex-direction:column;gap:4px}
+.pace-bg{height:7px;background:var(--c100);border-radius:10px;overflow:hidden}
+.pace-fill{height:100%;border-radius:10px;transition:width .5s ease}
+.pace-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--c400)}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+.kpi{background:var(--branco);border-radius:12px;padding:14px 16px;box-shadow:0 2px 7px rgba(114,0,214,.05);border:1px solid rgba(114,0,214,.06);position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--roxo)}
+.kpi.verde::after{background:var(--verde)}.kpi.rd::after{background:var(--rd)}.kpi.am::after{background:var(--am)}
+.kpi-l{font-size:10px;font-weight:600;color:var(--c400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:700;line-height:1}
+.kpi-v.roxo{color:var(--roxo)}.kpi-v.verde{color:var(--verde-dk)}.kpi-v.rd{color:var(--rd)}.kpi-v.am{color:var(--am)}
+.kpi-s{font-size:10px;color:var(--c400);margin-top:2px}
+
+/* CONTROLS */
+.ctrl{background:var(--branco);border-radius:12px;padding:12px 16px;box-shadow:0 2px 7px rgba(114,0,214,.05);border:1px solid rgba(114,0,214,.06);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.srch{position:relative;flex:1;min-width:180px}
+.srch svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--c400);pointer-events:none}
+.srch input{width:100%;padding:8px 12px 8px 30px;border:1.5px solid var(--c200);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--c900)}
+.srch input:focus{outline:none;border-color:var(--roxo)}
+select{padding:8px 12px;border:1.5px solid var(--c200);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--c900);background:var(--branco);cursor:pointer}
+select:focus{outline:none;border-color:var(--roxo)}
+.cnt-badge{background:var(--roxo-lt);color:var(--roxo);font-size:12px;font-weight:600;padding:7px 13px;border-radius:9px;white-space:nowrap}
+
+/* TABLE — sem scroll, layout fixo */
+.tbl-card{background:var(--branco);border-radius:16px;box-shadow:0 2px 10px rgba(114,0,214,.07);border:1px solid rgba(114,0,214,.07);overflow:hidden}
+.tbl-topbar{height:4px;background:var(--verde)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--roxo);color:#fff;padding:12px 16px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:center;white-space:nowrap}
+thead th.l{text-align:left}
+thead th:first-child{padding-left:20px;width:40px}
+tbody tr{border-bottom:1px solid var(--c100);transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#FAF6FF}
+tbody tr.row-zero{background:#FDF8FF}
+tbody tr.row-ok{background:#F6FFF0}
+td{padding:13px 16px;text-align:center;vertical-align:middle}
+td.l{text-align:left}
+td:first-child{padding-left:20px;color:var(--c400);font-size:12px;font-family:'DM Mono',monospace;width:40px}
+.cn{font-weight:600;font-size:13px;color:var(--c900);display:flex;align-items:center;gap:8px}
+.cc{font-size:11px;color:var(--c400);margin-top:2px}
+.funil-btn{background:none;border:1.5px solid var(--roxo-lt);color:var(--roxo);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
+.funil-btn:hover{background:var(--roxo);color:#fff;border-color:var(--roxo)}
+.m{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
+.m.roxo{color:var(--roxo)}.m.gn{color:var(--gn)}.m.rd{color:var(--rd)}.m.mu{color:var(--c400)}
+.pg{display:flex;align-items:center;gap:8px;min-width:130px}
+.pg-bg{flex:1;height:6px;background:var(--c100);border-radius:10px;overflow:hidden}
+.pg-fill{height:100%;border-radius:10px;transition:width .3s}
+.pg-pct{font-size:12px;font-weight:600;font-family:'DM Mono',monospace;min-width:34px;color:var(--c600)}
+.mr{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;padding:3px 8px;border-radius:7px;display:inline-block}
+.mr.rd{background:var(--rd-lt);color:var(--rd)}.mr.am{background:var(--am-lt);color:var(--am)}
+.mr.gn{background:var(--gn-lt);color:var(--gn)}.mr.ok{background:var(--verde-lt);color:var(--verde-dk);font-size:11px}
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.bdg-ok{background:var(--gn-lt);color:var(--gn)}.bdg-warn{background:var(--am-lt);color:var(--am)}
+.bdg-crit{background:var(--rd-lt);color:var(--rd)}.bdg-zero{background:var(--roxo-lt);color:var(--roxo)}
+.bdg-sup{background:var(--verde-lt);color:var(--verde-dk)}
+tfoot tr{background:var(--roxo)}
+tfoot td{color:#fff;font-weight:600;padding:12px 16px;font-family:'DM Mono',monospace;font-size:13px}
+tfoot td:first-child{padding-left:20px;font-family:'DM Sans',sans-serif;font-size:12px}
+
+/* MODAL FUNIL */
+.overlay{position:fixed;inset:0;background:rgba(18,0,40,.45);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.overlay.open{display:flex}
+.modal{background:var(--branco);border-radius:20px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(114,0,214,.25);overflow:hidden;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-hdr{background:var(--roxo);padding:20px 24px;display:flex;align-items:flex-start;justify-content:space-between}
+.modal-hdr-info .nome{font-size:16px;font-weight:700;color:#fff}
+.modal-hdr-info .cluster{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+.modal-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0}
+.modal-close:hover{background:rgba(255,255,255,.3)}
+.modal-body{padding:24px}
+
+/* funil visual */
+.funil-visual{display:flex;flex-direction:column;gap:0;margin-bottom:24px}
+.funil-step{display:flex;align-items:center;gap:14px;position:relative}
+.funil-step:not(:last-child)::after{content:'';position:absolute;left:20px;top:100%;width:2px;height:12px;background:var(--c200)}
+.funil-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.funil-info{flex:1}
+.funil-lbl{font-size:12px;font-weight:600;color:var(--c600)}
+.funil-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--c900);line-height:1.1}
+.funil-pct{font-size:11px;color:var(--c400);margin-top:1px}
+.funil-bar-wrap{width:120px;flex-shrink:0}
+.funil-bar-bg{height:8px;background:var(--c100);border-radius:10px;overflow:hidden}
+.funil-bar-fill{height:100%;border-radius:10px}
+.funil-connector{height:12px;margin-left:20px;display:flex;align-items:center;padding-left:18px}
+.funil-connector span{font-size:10px;color:var(--c400)}
+
+/* meta section no modal */
+.modal-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:0}
+.mm{background:var(--c50);border-radius:10px;padding:12px 14px;border:1px solid var(--c100)}
+.mm-l{font-size:10px;font-weight:600;color:var(--c400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.mm-v{font-size:17px;font-weight:700;font-family:'DM Mono',monospace;line-height:1.1}
+.mm-v.roxo{color:var(--roxo)}.mm-v.gn{color:var(--gn)}.mm-v.rd{color:var(--rd)}.mm-v.am{color:var(--am)}
+.modal-pg-wrap{margin-top:14px}
+.modal-pg-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--c400);margin-bottom:5px}
+.modal-pg-bg{height:10px;background:var(--c100);border-radius:10px;overflow:hidden}
+.modal-pg-fill{height:100%;border-radius:10px;transition:width .5s ease}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo-ph">[ LOGO MaisTODOS ]</div>
+    <div class="hdr-info">
+      <div class="t">Dashboard SP-Minas · Junho 2026</div>
+      <div class="s">122 clínicas · AmorSaúde Odontologia · Coordenação: Guilherme</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div style="text-align:center">
+      <button class="sync-btn" id="sync-btn" onclick="syncSheets()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Sincronizar Sheets
+      </button>
+      <div class="sync-status" id="sync-status">Não sincronizado</div>
+    </div>
+    <div class="du-box">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      DU restantes:
+      <input type="number" id="du" value="20" min="1" max="22" onchange="render()">
+    </div>
+    <div class="pill">Junho 2026</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- CONFIG -->
+  <div class="cfg">
+    <div class="cfg-title">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Conexão Google Sheets
+    </div>
+    <div class="cfg-row">
+      <div class="cf w"><label>ID da planilha</label><input type="text" id="sheet-id" placeholder="ID da URL do Google Sheets"><small>docs.google.com/spreadsheets/d/<b>ID_AQUI</b>/edit</small></div>
+      <div class="cf m"><label>Aba</label><input type="text" id="sheet-name" value="Acompanhamento Junho 26"></div>
+      <div class="cf s"><label>CNPJ</label><input id="col-cnpj" value="B"></div>
+      <div class="cf s"><label>SP1</label><input id="col-sp1" value="F"></div>
+      <div class="cf s"><label>Pré-Ap.</label><input id="col-preap" value="G"></div>
+      <div class="cf s"><label>P2</label><input id="col-p2" value="H"></div>
+      <div class="cf s"><label>Contr.</label><input id="col-cont" value="J"></div>
+      <div class="cf s"><label>Realiz.</label><input id="col-real" value="M"></div>
+      <div class="cf s"><label>1ª linha</label><input type="number" id="row-start" value="4"></div>
+      <button class="btn-save" onclick="saveConfig()">Salvar e Sincronizar</button>
+    </div>
+    <div class="alert" id="cfg-alert"></div>
+    <div class="cfg-warn">⚠️ <b>Obrigatório:</b> Google Sheets → Arquivo → Compartilhar → Qualquer pessoa com o link → Leitor</div>
+  </div>
+
+  <!-- RELÓGIO -->
+  <div class="rel-grid">
+    <div class="card">
+      <div class="card-title">
+        <span>⏱ Relógio de Meta · Regional SP-Minas</span>
+        <span class="last-sync" id="last-sync">—</span>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-svg">
+          <svg width="180" height="108" viewBox="0 0 180 108" overflow="visible">
+            <defs>
+              <linearGradient id="grd-rd" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#DC2626"/><stop offset="100%" stop-color="#F97316"/></linearGradient>
+              <linearGradient id="grd-am" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#F97316"/><stop offset="100%" stop-color="#EAB308"/></linearGradient>
+              <linearGradient id="grd-gn" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#16A34A"/><stop offset="100%" stop-color="#70E000"/></linearGradient>
+            </defs>
+            <path d="M10,100 A80,80 0 0,1 170,100" fill="none" stroke="#E4E4E7" stroke-width="14" stroke-linecap="round"/>
+            <path id="gauge-arc" d="M10,100 A80,80 0 0,1 170,100" fill="none" stroke="url(#grd-rd)" stroke-width="14" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="251.3" style="transition:stroke-dashoffset .8s ease"/>
+            <circle id="gauge-dot" cx="10" cy="100" r="7" fill="#DC2626" stroke="white" stroke-width="2" style="transition:cx .8s ease,cy .8s ease,fill .3s"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-pct" id="g-pct">0%</div>
+            <div class="gauge-sub">atingimento</div>
+          </div>
+        </div>
+        <div class="rst-grid">
+          <div class="rst"><div class="rst-l">Meta regional</div><div class="rst-v roxo" id="g-meta">—</div></div>
+          <div class="rst"><div class="rst-l">Realizado</div><div class="rst-v gn" id="g-real">R$ 0</div></div>
+          <div class="rst"><div class="rst-l">GAP</div><div class="rst-v rd" id="g-gap">—</div></div>
+          <div class="rst"><div class="rst-l">Nec./DU</div><div class="rst-v am" id="g-du">—</div><div class="rst-s" id="g-du-sub">20 DU</div></div>
+        </div>
+      </div>
+      <div class="pace-wrap">
+        <div class="pace-lbl"><span>Progresso</span><span id="g-pace-lbl">0%</span></div>
+        <div class="pace-bg"><div class="pace-fill" id="g-pace-bar" style="width:0%;background:var(--rd)"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Atingimento por cluster</div>
+      <div id="cluster-stats" style="display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center"></div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row" id="kpis"></div>
+
+  <!-- CONTROLS -->
+  <div class="ctrl">
+    <div class="srch">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="busca" placeholder="Buscar clínica..." oninput="render()">
+    </div>
+    <select id="fil" onchange="render()">
+      <option value="">Todos os status</option>
+      <option value="zerada">Zeradas</option>
+      <option value="crit">Crítico (&lt;50%)</option>
+      <option value="warn">Atenção (50–90%)</option>
+      <option value="ok">No caminho (≥90%)</option>
+      <option value="sup">Superou a meta</option>
+    </select>
+    <select id="fil-cl" onchange="render()">
+      <option value="">Todos os clusters</option>
+      <option value="ate4">Cluster ATÉ 4</option>
+      <option value="56">Cluster 5 e 6</option>
+      <option value="7">Cluster 7+</option>
+    </select>
+    <select id="ord" onchange="render()">
+      <option value="meta">Maior meta</option>
+      <option value="gap">Maior GAP</option>
+      <option value="pct_asc">Menor atingimento</option>
+      <option value="pct_desc">Maior atingimento</option>
+      <option value="sp1">Maior SP1</option>
+      <option value="nome">Nome A→Z</option>
+    </select>
+    <div class="cnt-badge" id="cnt">122 clínicas</div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tbl-card">
+    <div class="tbl-topbar"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th class="l">Clínica</th>
+          <th>Funil</th>
+          <th>Contratos</th>
+          <th>Meta Junho</th>
+          <th>Meta / DU</th>
+          <th>Realizado</th>
+          <th>GAP</th>
+          <th>Meta Rev. (GAP÷DU)</th>
+          <th>Progresso</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+      <tfoot id="tf"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL FUNIL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-hdr">
+      <div class="modal-hdr-info">
+        <div class="nome" id="m-nome">—</div>
+        <div class="cluster" id="m-cluster">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="funil-visual" id="m-funil"></div>
+      <div class="modal-meta" id="m-meta"></div>
+      <div class="modal-pg-wrap">
+        <div class="modal-pg-lbl"><span>Progresso da meta</span><span id="m-pct-lbl">0%</span></div>
+        <div class="modal-pg-bg"><div class="modal-pg-fill" id="m-pg-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DU_MES=20;
+const DATA=[{"cnpj":"8593027000147","nome":"Patos De Minas","cluster":"ATÉ 4","meta_jun":80000},{"cnpj":"42801562000184","nome":"Santo Andre","cluster":"5 e 6","meta_jun":100000},{"cnpj":"10763642000104","nome":"Uberaba","cluster":"7 ou Mais","meta_jun":60000},{"cnpj":"24932232000146","nome":"Sp M'Boi Mirim","cluster":"7 ou Mais","meta_jun":75000},{"cnpj":"17634829000149","nome":"Suzano","cluster":"7 ou Mais","meta_jun":50000},{"cnpj":"7342208000138","nome":"Montes Claros","cluster":"5 e 6","meta_jun":50000},{"cnpj":"24926295000190","nome":"Embu Das Artes","cluster":"7 ou Mais","meta_jun":40000},{"cnpj":"11842769000173","nome":"Ferraz De Vasconcelos","cluster":"7 ou Mais","meta_jun":50000},{"cnpj":"26634255000108","nome":"Itapecerica Da Serra","cluster":"5 e 6","meta_jun":40000},{"cnpj":"26342962000112","nome":"Sp Penha","cluster":"5 e 6","meta_jun":50000},{"cnpj":"24766111000171","nome":"Sp Sao Mateus","cluster":"5 e 6","meta_jun":40000},{"cnpj":"32633937000190","nome":"Sp Itaim Paulista","cluster":"5 e 6","meta_jun":50000},{"cnpj":"56421441000111","nome":"Sp Parelheiros","cluster":"ATÉ 4","meta_jun":40000},{"cnpj":"28807237000106","nome":"Braganca Paulista","cluster":"ATÉ 4","meta_jun":40000},{"cnpj":"37762806000127","nome":"Barbacena","cluster":"5 e 6","meta_jun":25000},{"cnpj":"25255628000169","nome":"Carapicuiba","cluster":"5 e 6","meta_jun":25000},{"cnpj":"14650152000225","nome":"Guarulhos Pimentas","cluster":"5 e 6","meta_jun":30000},{"cnpj":"39840362000126","nome":"Sao Jose Dos Campos","cluster":"5 e 6","meta_jun":20000},{"cnpj":"26192992000190","nome":"Sp Cidade Ademar","cluster":"5 e 6","meta_jun":20000},{"cnpj":"34894876000140","nome":"Juiz De Fora","cluster":"5 e 6","meta_jun":20000},{"cnpj":"30280982000183","nome":"Betim","cluster":"5 e 6","meta_jun":20000},{"cnpj":"25421246000168","nome":"Diadema","cluster":"5 e 6","meta_jun":20000},{"cnpj":"45075572000178","nome":"Sao Joao Del Rei","cluster":"5 e 6","meta_jun":30000},{"cnpj":"25355886000117","nome":"Sp Pinheiros","cluster":"5 e 6","meta_jun":20000},{"cnpj":"42628912000152","nome":"Ponte Nova","cluster":"ATÉ 4","meta_jun":25000},{"cnpj":"38253987000129","nome":"Bh Oeste","cluster":"ATÉ 4","meta_jun":25000},{"cnpj":"38275966000104","nome":"Caratinga","cluster":"ATÉ 4","meta_jun":25000},{"cnpj":"6277379000168","nome":"Teofilo Otoni","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"36877250000151","nome":"Pocos De Caldas","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"30385679000145","nome":"Ribeirao Das Neves","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"56067500000103","nome":"Araxa","cluster":"ATÉ 4","meta_jun":30000},{"cnpj":"36008463000147","nome":"Sp Guainases","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"42365789000124","nome":"Sp Vila Andrade","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"41815685000101","nome":"Sp Piraporinha","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"8145097000132","nome":"Varginha","cluster":"ATÉ 4","meta_jun":30000},{"cnpj":"7342208000219","nome":"Montes Claros Major Prates","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"45272633000197","nome":"Araguari","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"42080397000119","nome":"Patrocinio","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"52723682000164","nome":"Poa","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"12252236000102","nome":"Mogi Das Cruzes","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"34720845000173","nome":"Itaquaquecetuba","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"62909011000146","nome":"Sao Joao Del Rei Apoio","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"24996244000215","nome":"Ribeirao Pires","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"26412493000160","nome":"Sapopemba","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"30385679000226","nome":"Ribeirao Das Neves Veneza","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"43694163000124","nome":"Vicosa","cluster":"ATÉ 4","meta_jun":25000},{"cnpj":"59470890000148","nome":"Atibaia","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"12111983000112","nome":"Passos","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"25154224000260","nome":"Sp Perus","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"50580065000121","nome":"Tres Coracoes","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"25454461000165","nome":"Sp Vila Maria","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"24995710000167","nome":"Sp Campo Limpo","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"46591005000137","nome":"Mariana","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"26040158000189","nome":"Sp Capela Do Socorro","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"41598173000130","nome":"Lavras","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"53689465000168","nome":"Uberlandia Jardim Patricia","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"24510647000121","nome":"Guaratingueta","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"43327548000153","nome":"Alfenas","cluster":"ATÉ 4","meta_jun":12000},{"cnpj":"51814265000164","nome":"Cajamar","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"10968876000180","nome":"Manhuacu","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"56321440000103","nome":"Cacapava","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"42026574000189","nome":"Bh Norte","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"11726986000106","nome":"Clinica Taubate","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"46987047000191","nome":"Nova Lima","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"42289227000149","nome":"Itajuba","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"14650152000144","nome":"Guarulhos Parque Sao Luiz","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"53690742000152","nome":"Nova Serrana","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"16722961000220","nome":"Lagoa Santa","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"17922590000102","nome":"Jacarei","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"12022642000170","nome":"Guarulhos Centro","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"45416959000140","nome":"Uba","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"32451813000194","nome":"Para De Minas","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"45987795000101","nome":"Justinopolis","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"47075427000112","nome":"Bh Minas Shopping","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"36212798000182","nome":"Bh Centro Sul","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"56925896000174","nome":"Sp Ermelino Matarazzo","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"42390667000198","nome":"Aruja","cluster":"ATÉ 4","meta_jun":20000},{"cnpj":"49612523000188","nome":"Mogi Das Cruzes Vila Suissa","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"30280982000264","nome":"Betim Alterosas","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"61171936000170","nome":"Jandira","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"48583489000106","nome":"Taboao Da Serra Jardim Pirajussara","cluster":"ATÉ 4","meta_jun":15000},{"cnpj":"27250514000151","nome":"Sp Jabaquara","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"52880120000124","nome":"Ituiutaba","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"42168593000140","nome":"Cataguases","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"48032574000178","nome":"Muriae","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"51198645000111","nome":"Itauna","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"24857834000267","nome":"Osasco Baronesa","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"11726986000289","nome":"Pindamonhangaba","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"16722961000301","nome":"Vespasiano","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"22864837000383","nome":"Coronel Fabriciano","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"12022642000251","nome":"Guarulhos Vila Florida","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"56392379000187","nome":"Taubate Apoio Centro","cluster":"ATÉ 4","meta_jun":10000},{"cnpj":"32454844000107","nome":"Ibirite","cluster":"5 e 6","meta_jun":15000},{"cnpj":"26688552000128","nome":"Cotia","cluster":"5 e 6","meta_jun":15000},{"cnpj":"16722961000140","nome":"Contagem","cluster":"5 e 6","meta_jun":20000},{"cnpj":"32220007000105","nome":"Divinopolis","cluster":"5 e 6","meta_jun":15000},{"cnpj":"5299068000137","nome":"Conselheiro Lafaiete","cluster":"5 e 6","meta_jun":15000},{"cnpj":"37008114000198","nome":"Taboao Da Serra","cluster":"5 e 6","meta_jun":15000},{"cnpj":"34304149000186","nome":"Uberlandia","cluster":"5 e 6","meta_jun":20000},{"cnpj":"32364472000110","nome":"Santa Luzia","cluster":"5 e 6","meta_jun":15000},{"cnpj":"51688663000181","nome":"Freguesia Do O","cluster":"5 e 6","meta_jun":15000},{"cnpj":"24960737000114","nome":"Sao Bernardo Do Campo","cluster":"5 e 6","meta_jun":15000},{"cnpj":"24996244000134","nome":"Maua","cluster":"5 e 6","meta_jun":15000},{"cnpj":"26105400000155","nome":"Sp Ipiranga","cluster":"5 e 6","meta_jun":15000},{"cnpj":"31370122000101","nome":"Sp Tatuape","cluster":"5 e 6","meta_jun":15000},{"cnpj":"25966574000140","nome":"Sp Itaquera","cluster":"5 e 6","meta_jun":25000},{"cnpj":"39682215000175","nome":"Sp Grajau","cluster":"5 e 6","meta_jun":20000},{"cnpj":"21866414000178","nome":"Itapevi","cluster":"5 e 6","meta_jun":15000},{"cnpj":"46557130000120","nome":"Caraguatatuba","cluster":"5 e 6","meta_jun":20000},{"cnpj":"36155593000102","nome":"Pouso Alegre","cluster":"5 e 6","meta_jun":20000},{"cnpj":"26228511000159","nome":"Barueri","cluster":"5 e 6","meta_jun":10000},{"cnpj":"10860953000183","nome":"Curvelo","cluster":"5 e 6","meta_jun":10000},{"cnpj":"36470039000110","nome":"Sabara","cluster":"5 e 6","meta_jun":10000},{"cnpj":"8344980000151","nome":"Bh Venda Nova","cluster":"5 e 6","meta_jun":10000},{"cnpj":"25117242000190","nome":"Sp Tucuruvi","cluster":"5 e 6","meta_jun":15000},{"cnpj":"24658652000186","nome":"Sp Sao Miguel Paulista","cluster":"7 ou Mais","meta_jun":30000},{"cnpj":"26637922000106","nome":"Sp Casa Verde","cluster":"7 ou Mais","meta_jun":30000},{"cnpj":"24857834000186","nome":"Osasco","cluster":"7 ou Mais","meta_jun":20000},{"cnpj":"25154224000189","nome":"Sp Pirituba","cluster":"7 ou Mais","meta_jun":15000},{"cnpj":"22864837000111","nome":"Ipatinga","cluster":"7 ou Mais","meta_jun":20000},{"cnpj":"30045279000190","nome":"Bh Barreiro","cluster":"7 ou Mais","meta_jun":20000},{"cnpj":"8445449000175","nome":"Sete Lagoas","cluster":"7 ou Mais","meta_jun":20000}];
+
+let sheetsKPI={};
+
+const fmt=v=>{if(v>=1000000)return'R$ '+(v/1000000).toFixed(2).replace('.',',')+'M';if(v>=1000)return'R$ '+Math.round(v/1000).toLocaleString('pt-BR')+'k';return'R$ '+Math.round(v).toLocaleString('pt-BR');};
+const fmtFull=v=>'R$ '+Math.round(v).toLocaleString('pt-BR');
+const getDU=()=>Math.max(1,parseInt(document.getElementById('du').value)||20);
+
+function getKPI(cnpj){
+  const n=String(cnpj).replace(/\D/g,'');
+  if(sheetsKPI[n])return sheetsKPI[n];
+  const nl=n.replace(/^0+/,'');
+  for(const k of Object.keys(sheetsKPI)){if(k.replace(/^0+/,'')===nl)return sheetsKPI[k];}
+  return{sp1:0,preap:0,p2:0,contratos:0,realizado:0};
+}
+
+// CONFIG
+function loadConfig(){
+  try{
+    const c=JSON.parse(localStorage.getItem('dash_cfg_v3')||'{}');
+    ['sheet-id','sheet-name','col-cnpj','col-sp1','col-preap','col-p2','col-cont','col-real','row-start'].forEach(id=>{
+      if(c[id.replace(/-/g,'_')])document.getElementById(id).value=c[id.replace(/-/g,'_')];
+    });
+  }catch(e){}
+}
+function getConfig(){
+  return{sheet_id:document.getElementById('sheet-id').value.trim(),sheet_name:document.getElementById('sheet-name').value.trim(),col_cnpj:document.getElementById('col-cnpj').value.trim().toUpperCase(),col_sp1:document.getElementById('col-sp1').value.trim().toUpperCase(),col_preap:document.getElementById('col-preap').value.trim().toUpperCase(),col_p2:document.getElementById('col-p2').value.trim().toUpperCase(),col_cont:document.getElementById('col-cont').value.trim().toUpperCase(),col_real:document.getElementById('col-real').value.trim().toUpperCase(),row_start:parseInt(document.getElementById('row-start').value)||4};
+}
+function saveConfig(){
+  const cfg=getConfig();
+  if(!cfg.sheet_id){showAlert('Insira o ID da planilha.','info');return;}
+  try{localStorage.setItem('dash_cfg_v3',JSON.stringify(cfg));}catch(e){}
+  syncSheets();
+}
+function showAlert(msg,type){const el=document.getElementById('cfg-alert');el.textContent=msg;el.className='alert '+type;}
+function colIdx(l){let n=0;for(let i=0;i<l.length;i++)n=n*26+(l.charCodeAt(i)-64);return n-1;}
+function parseBRL(s){if(!s&&s!==0)return 0;if(typeof s==='number')return s;return parseFloat(String(s).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.'))||0;}
+function parseCSV(text){const rows=[];for(const line of text.split('\n')){const cols=[];let cur='',inQ=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}else cur+=ch;}cols.push(cur.trim());rows.push(cols);}return rows;}
+
+async function syncSheets(){
+  const cfg=getConfig();
+  if(!cfg.sheet_id){showAlert('Configure o ID primeiro.','info');return;}
+  const btn=document.getElementById('sync-btn');
+  btn.classList.add('loading');
+  document.getElementById('sync-status').textContent='Sincronizando...';
+  const url=`https://docs.google.com/spreadsheets/d/${cfg.sheet_id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(cfg.sheet_name)}`;
+  try{
+    const resp=await fetch(url);
+    if(!resp.ok)throw new Error('Inacessível ('+resp.status+'). Verifique o compartilhamento.');
+    const rows=parseCSV(await resp.text());
+    const ci={cnpj:colIdx(cfg.col_cnpj),sp1:colIdx(cfg.col_sp1),preap:colIdx(cfg.col_preap),p2:colIdx(cfg.col_p2),cont:colIdx(cfg.col_cont),real:colIdx(cfg.col_real)};
+    sheetsKPI={};let count=0;
+    for(let i=cfg.row_start-1;i<rows.length;i++){
+      const row=rows[i];
+      if(!row||row.length<=Math.max(...Object.values(ci)))continue;
+      const rawCnpj=String(row[ci.cnpj]||'').replace(/\D/g,'');
+      if(!rawCnpj||rawCnpj.length<8)continue;
+      sheetsKPI[rawCnpj]={sp1:parseInt(row[ci.sp1])||0,preap:parseInt(row[ci.preap])||0,p2:parseInt(row[ci.p2])||0,contratos:parseInt(row[ci.cont])||0,realizado:parseBRL(row[ci.real])};
+      count++;
+    }
+    const hm=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-sync').textContent='Atualizado às '+hm;
+    document.getElementById('sync-status').textContent='✓ '+count+' clínicas';
+    showAlert('✓ '+count+' clínicas sincronizadas da aba "'+cfg.sheet_name+'".','ok');
+    render();
+  }catch(err){
+    document.getElementById('sync-status').textContent='Erro';
+    showAlert('Erro: '+err.message,'err');
+  }
+  btn.classList.remove('loading');
+}
+
+// GAUGE
+function updateGauge(pct){
+  const cp=Math.min(pct,1);
+  const arc=document.getElementById('gauge-arc'),dot=document.getElementById('gauge-dot');
+  if(!arc)return;
+  arc.style.strokeDashoffset=251.3*(1-cp);
+  arc.setAttribute('stroke',pct>=0.9?'url(#grd-gn)':pct>=0.5?'url(#grd-am)':'url(#grd-rd)');
+  dot.setAttribute('cx',90+80*Math.cos(Math.PI*(1-cp)));
+  dot.setAttribute('cy',100-80*Math.sin(Math.PI*(1-cp)));
+  dot.setAttribute('fill',pct>=0.9?'#16A34A':pct>=0.5?'#D97706':'#DC2626');
+}
+
+function updateRelogio(){
+  const du=getDU();
+  const tm=DATA.reduce((s,c)=>s+c.meta_jun,0);
+  const tr=DATA.reduce((s,c)=>s+getKPI(c.cnpj).realizado,0);
+  const gap=Math.max(0,tm-tr);
+  const pct=tm>0?tr/tm:0;
+  const pd=Math.round(pct*100);
+  updateGauge(pct);
+  const gEl=document.getElementById('g-pct');
+  gEl.textContent=pd+'%';gEl.style.color=pct>=0.9?'var(--gn)':pct>=0.5?'var(--am)':'var(--rd)';
+  document.getElementById('g-meta').textContent=fmt(tm);
+  document.getElementById('g-real').textContent=fmt(tr);
+  document.getElementById('g-gap').textContent=gap>0?fmt(gap):'✓ Atingida';
+  document.getElementById('g-gap').style.color=gap>0?'var(--rd)':'var(--gn)';
+  const ndu=gap>0?Math.round(gap/du):0;
+  document.getElementById('g-du').textContent=gap>0?fmtFull(ndu):'✓';
+  document.getElementById('g-du').style.color=gap>0?'var(--am)':'var(--gn)';
+  document.getElementById('g-du-sub').textContent=du+' DU restantes';
+  const bc=pct>=0.9?'var(--gn)':pct>=0.5?'var(--am)':'var(--rd)';
+  document.getElementById('g-pace-bar').style.cssText=`width:${Math.min(100,pd)}%;background:${bc}`;
+  document.getElementById('g-pace-lbl').textContent=pd+'%';
+
+  document.getElementById('cluster-stats').innerHTML=[
+    {k:'ATÉ 4',l:'ATÉ 4 cadeiras'},{k:'5 e 6',l:'5 e 6 cadeiras'},{k:'7 ou Mais',l:'7+ cadeiras'}
+  ].map(cl=>{
+    const its=DATA.filter(c=>c.cluster===cl.k);
+    const ctm=its.reduce((s,c)=>s+c.meta_jun,0);
+    const ctr=its.reduce((s,c)=>s+getKPI(c.cnpj).realizado,0);
+    const cp=ctm>0?Math.min(ctr/ctm,1):0;
+    const cpd=Math.round((ctm>0?ctr/ctm:0)*100);
+    const cgap=Math.max(0,ctm-ctr);
+    const csp1=its.reduce((s,c)=>s+getKPI(c.cnpj).sp1,0);
+    const cc=its.reduce((s,c)=>s+getKPI(c.cnpj).contratos,0);
+    const bcc=cp>=0.9?'var(--gn)':cp>=0.5?'var(--am)':'var(--rd)';
+    return`<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+      <div><div style="font-size:12px;font-weight:600">${cl.l} <span style="font-size:10px;color:var(--c400)">(${its.length})</span></div>
+      <div style="font-size:10px;color:var(--c400)">Meta ${fmt(ctm)} · Real. ${fmt(ctr)} · SP1 ${csp1.toLocaleString('pt-BR')} · Contr. ${cc}</div></div>
+      <div style="text-align:right"><div style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;color:${bcc}">${cpd}%</div>
+      ${cgap>0?`<div style="font-size:10px;color:var(--c400)">GAP ${fmt(cgap)} · ${fmtFull(Math.round(cgap/du))}/DU</div>`:'<div style="font-size:10px;color:var(--gn)">✓ Atingida</div>'}</div></div>
+      <div style="height:9px;background:var(--c100);border-radius:10px;overflow:hidden"><div style="height:100%;width:${Math.round(cp*100)}%;background:${bcc};border-radius:10px;transition:width .5s ease"></div></div></div>`;
+  }).join('');
+}
+
+function renderKPIs(){
+  const du=getDU();
+  const tm=DATA.reduce((s,c)=>s+c.meta_jun,0);
+  const tr=DATA.reduce((s,c)=>s+getKPI(c.cnpj).realizado,0);
+  const gap=Math.max(0,tm-tr);
+  const tsp1=DATA.reduce((s,c)=>s+getKPI(c.cnpj).sp1,0);
+  const tcont=DATA.reduce((s,c)=>s+getKPI(c.cnpj).contratos,0);
+  const z=DATA.filter(c=>getKPI(c.cnpj).realizado===0).length;
+  const ok=DATA.filter(c=>{const r=getKPI(c.cnpj).realizado;return r>0&&r/c.meta_jun>=0.9;}).length;
+  const crit=DATA.filter(c=>getKPI(c.cnpj).realizado/c.meta_jun<0.5).length;
+  const pct=Math.round(tm>0?tr/tm*100:0);
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-l">Meta regional</div><div class="kpi-v roxo">${fmt(tm)}</div><div class="kpi-s">122 clínicas</div></div>
+    <div class="kpi verde"><div class="kpi-l">Realizado</div><div class="kpi-v verde">${fmt(tr)}</div><div class="kpi-s">${pct}% da meta</div></div>
+    <div class="kpi rd"><div class="kpi-l">GAP</div><div class="kpi-v rd">${gap>0?fmt(gap):'✓ 0'}</div><div class="kpi-s">a recuperar</div></div>
+    <div class="kpi"><div class="kpi-l">Nec./DU</div><div class="kpi-v roxo">${gap>0?fmtFull(Math.round(gap/du)):'✓'}</div><div class="kpi-s">${du} DU restantes</div></div>
+    <div class="kpi"><div class="kpi-l">Total SP1</div><div class="kpi-v roxo">${tsp1.toLocaleString('pt-BR')}</div><div class="kpi-s">simulações</div></div>
+    <div class="kpi verde"><div class="kpi-l">Contratos</div><div class="kpi-v verde">${tcont.toLocaleString('pt-BR')}</div><div class="kpi-s">efetivados</div></div>
+    <div class="kpi am"><div class="kpi-l">Zeradas</div><div class="kpi-v am">${z}</div><div class="kpi-s">de 122</div></div>
+    <div class="kpi rd"><div class="kpi-l">Crítico</div><div class="kpi-v rd">${crit}</div><div class="kpi-s">&lt;50% da meta</div></div>
+  `;
+}
+
+function mrC(mr,md){if(mr<=0)return'ok';if(mr<=md*1.2)return'gn';if(mr<=md*2)return'am';return'rd';}
+function stI(r,m){
+  if(r===0)return['Zerada','bdg-zero'];
+  const p=r/m;
+  if(p>1)return['Superou!','bdg-sup'];
+  if(p>=0.9)return['No caminho','bdg-ok'];
+  if(p>=0.5)return['Atenção','bdg-warn'];
+  return['Crítico','bdg-crit'];
+}
+
+function render(){
+  const du=getDU();
+  const busca=document.getElementById('busca').value.toLowerCase();
+  const fil=document.getElementById('fil').value;
+  const filCl=document.getElementById('fil-cl').value;
+  const ord=document.getElementById('ord').value;
+
+  let d=DATA.filter(c=>{
+    if(busca&&!c.nome.toLowerCase().includes(busca))return false;
+    const r=getKPI(c.cnpj).realizado,p=r/c.meta_jun;
+    if(fil==='zerada'&&r!==0)return false;
+    if(fil==='crit'&&p>=0.5)return false;
+    if(fil==='warn'&&(p<0.5||p>=0.9))return false;
+    if(fil==='ok'&&(p<0.9||p>1))return false;
+    if(fil==='sup'&&p<=1)return false;
+    if(filCl==='ate4'&&c.cluster!=='ATÉ 4'&&c.cluster!=='ATÉ 5')return false;
+    if(filCl==='56'&&c.cluster!=='5 e 6')return false;
+    if(filCl==='7'&&c.cluster!=='7 ou Mais')return false;
+    return true;
+  });
+
+  d.sort((a,b)=>{
+    const ra=getKPI(a.cnpj).realizado,rb=getKPI(b.cnpj).realizado;
+    if(ord==='meta')return b.meta_jun-a.meta_jun;
+    if(ord==='gap')return(b.meta_jun-rb)-(a.meta_jun-ra);
+    if(ord==='pct_asc')return(ra/a.meta_jun)-(rb/b.meta_jun);
+    if(ord==='pct_desc')return(rb/b.meta_jun)-(ra/a.meta_jun);
+    if(ord==='sp1')return getKPI(b.cnpj).sp1-getKPI(a.cnpj).sp1;
+    if(ord==='nome')return a.nome.localeCompare(b.nome);
+    return 0;
+  });
+
+  document.getElementById('cnt').textContent=d.length+' clínicas';
+  renderKPIs();updateRelogio();
+
+  document.getElementById('tb').innerHTML=d.map((c,i)=>{
+    const kpi=getKPI(c.cnpj);
+    const r=kpi.realizado,gap=c.meta_jun-r;
+    const pct=c.meta_jun>0?r/c.meta_jun:0;
+    const bw=Math.min(100,Math.round(pct*100));
+    const bc=pct>1?'#52A800':pct>=0.9?'#16A34A':pct>=0.5?'#D97706':'#DC2626';
+    const mdu=Math.round(c.meta_jun/DU_MES);
+    const mrev=gap>0?Math.round(gap/du):0;
+    const mc=mrC(mrev,mdu);
+    const[stl,stc]=stI(r,c.meta_jun);
+    const trC=r===0?'row-zero':pct>1?'row-ok':'';
+    const gH=gap>0?`<span class="m rd">-${fmt(gap)}</span>`:`<span class="m gn">+${fmt(Math.abs(gap))}</span>`;
+    const mH=gap>0?`<span class="mr ${mc}">${fmtFull(mrev)}</span>`:`<span class="mr ok">✓ Atingida</span>`;
+    return`<tr class="${trC}">
+      <td>${i+1}</td>
+      <td class="l">
+        <div class="cn">AS ${c.nome}</div>
+        <div class="cc">${c.cluster}</div>
+      </td>
+      <td><button class="funil-btn" onclick="openFunil('${c.cnpj}')">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Ver funil
+      </button></td>
+      <td><span class="m ${kpi.contratos>0?'gn':'mu'}">${kpi.contratos>0?kpi.contratos:'—'}</span></td>
+      <td><span class="m roxo">${fmtFull(c.meta_jun)}</span></td>
+      <td><span class="m mu">${fmtFull(mdu)}</span></td>
+      <td>${r>0?`<span class="m gn">${fmtFull(r)}</span>`:`<span class="m mu">—</span>`}</td>
+      <td>${gH}</td>
+      <td>${mH}</td>
+      <td><div class="pg"><div class="pg-bg"><div class="pg-fill" style="width:${bw}%;background:${bc}"></div></div><span class="pg-pct">${Math.round(pct*100)}%</span></div></td>
+      <td><span class="bdg ${stc}">${stl}</span></td>
+    </tr>`;
+  }).join('');
+
+  const tm2=d.reduce((s,c)=>s+c.meta_jun,0);
+  const tr2=d.reduce((s,c)=>s+getKPI(c.cnpj).realizado,0);
+  const sp2=d.reduce((s,c)=>s+getKPI(c.cnpj).sp1,0);
+  const cont2=d.reduce((s,c)=>s+getKPI(c.cnpj).contratos,0);
+  const gap2=tm2-tr2;
+  document.getElementById('tf').innerHTML=`<tr>
+    <td colspan="2">${d.length} clínicas</td>
+    <td></td>
+    <td>${cont2.toLocaleString('pt-BR')}</td>
+    <td>${fmtFull(tm2)}</td><td></td>
+    <td>${fmtFull(tr2)}</td>
+    <td>${gap2>0?'-'+fmt(gap2):'+'+fmt(Math.abs(gap2))}</td>
+    <td>${gap2>0?fmtFull(Math.round(gap2/du)):'✓'}</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+
+// ── MODAL FUNIL ──────────────────────────────────────────────────────────────
+function openFunil(cnpj){
+  const c=DATA.find(x=>x.cnpj===cnpj);
+  if(!c)return;
+  const kpi=getKPI(cnpj);
+  const du=getDU();
+  const r=kpi.realizado,meta=c.meta_jun;
+  const pct=meta>0?r/meta:0;
+  const gap=Math.max(0,meta-r);
+  const mrev=gap>0?Math.round(gap/du):0;
+
+  document.getElementById('m-nome').textContent='AS '+c.nome;
+  document.getElementById('m-cluster').textContent=c.cluster+' · CNPJ '+cnpj;
+
+  // funil steps
+  const steps=[
+    {icon:'👥',label:'Simulações (SP1)',val:kpi.sp1,base:kpi.sp1,cor:'#7200D6'},
+    {icon:'✅',label:'Pré-Aprovados',val:kpi.preap,base:kpi.sp1,cor:'#9B40E8'},
+    {icon:'📋',label:'Simulados P2 (Proposta)',val:kpi.p2,base:kpi.sp1,cor:'#D97706'},
+    {icon:'🤝',label:'Contratos efetivados',val:kpi.contratos,base:kpi.sp1,cor:'#16A34A'},
+  ];
+
+  const total=kpi.sp1||1;
+  document.getElementById('m-funil').innerHTML=steps.map((st,i)=>{
+    const pctStep=total>0?Math.min(st.val/total,1):0;
+    const conv=i>0&&steps[i-1].val>0?Math.round(st.val/steps[i-1].val*100)+'% conv.':'';
+    return`<div class="funil-step" style="padding:12px 0;${i>0?'border-top:1px solid var(--c100)':''}">
+      <div class="funil-icon" style="background:${st.cor}22">${st.icon}</div>
+      <div class="funil-info">
+        <div class="funil-lbl">${st.label}</div>
+        <div class="funil-val" style="color:${st.cor}">${st.val>0?st.val.toLocaleString('pt-BR'):'—'}</div>
+        ${conv?`<div class="funil-pct">${conv} da etapa anterior</div>`:''}
+      </div>
+      <div class="funil-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--c400);margin-bottom:4px">
+          <span>${Math.round(pctStep*100)}% do topo</span>
+        </div>
+        <div class="funil-bar-bg"><div class="funil-bar-fill" style="width:${Math.round(pctStep*100)}%;background:${st.cor}"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // meta section
+  const mrevCor=mrev<=0?'#16A34A':mrev<=meta/DU_MES*1.2?'#16A34A':mrev<=meta/DU_MES*2?'#D97706':'#DC2626';
+  document.getElementById('m-meta').innerHTML=`
+    <div class="mm"><div class="mm-l">Meta junho</div><div class="mm-v roxo">${fmtFull(meta)}</div></div>
+    <div class="mm"><div class="mm-l">Realizado</div><div class="mm-v ${r>0?'gn':'am'}">${r>0?fmtFull(r):'—'}</div></div>
+    <div class="mm"><div class="mm-l">GAP</div><div class="mm-v ${gap>0?'rd':'gn'}">${gap>0?fmtFull(gap):'✓ 0'}</div></div>
+    <div class="mm"><div class="mm-l">Meta / DU orig.</div><div class="mm-v am">${fmtFull(Math.round(meta/DU_MES))}</div></div>
+    <div class="mm"><div class="mm-l">Meta rev./DU</div><div class="mm-v" style="color:${mrevCor}">${gap>0?fmtFull(mrev):'✓ Atingida'}</div></div>
+    <div class="mm"><div class="mm-l">DU restantes</div><div class="mm-v roxo">${du}</div></div>
+  `;
+
+  const pgW=Math.min(100,Math.round(pct*100));
+  const pgC=pct>=0.9?'var(--gn)':pct>=0.5?'var(--am)':'var(--rd)';
+  document.getElementById('m-pg-fill').style.cssText=`width:${pgW}%;background:${pgC}`;
+  document.getElementById('m-pct-lbl').textContent=Math.round(pct*100)+'%';
+
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('overlay'))return;
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+loadConfig();
+render();
+if(localStorage.getItem('dash_cfg_v3')){
+  const cfg=JSON.parse(localStorage.getItem('dash_cfg_v3'));
+  if(cfg.sheet_id)setTimeout(syncSheets,600);
+}
+</script>
+</body>
+</html>
